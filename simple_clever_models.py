@@ -1,6 +1,6 @@
 from random import randint
 
-from math import sqrt, copysign
+from math import copysign
 
 from game_objects import Model, ACTIONS, ENTITIES_STATES
 

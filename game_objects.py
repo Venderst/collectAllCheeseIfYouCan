@@ -39,8 +39,9 @@ class Model:
     def get_name(self):
         return self._name
 
-    def set_game_result(self, result):
-        result = list(self._game_results.keys())[list(self._game_results.values()).index(result)]
+    def set_game_result(self, game_result):
+        result = list(self._game_results.keys())
+        result = result[list(self._game_results.values()).index(game_result)]
         print(f'{self._name}: {result}')
 
 
@@ -55,6 +56,9 @@ class Entity:
 
     def increase_score(self):
         self.score += 1
+
+    def reset_score(self):
+        self.score = 0
 
     def get_x(self) -> int:
         return self._world_map_x
@@ -79,12 +83,15 @@ class Entity:
 
 class DynamicEntity(Entity):
 
-    def __init__(self, world_map_x, world_map_y, model, state):
+    def __init__(self, world_map_x, world_map_y, state, model=None):
         super().__init__(world_map_x, world_map_y, state)
         self._model = model
 
         self._last_action = ACTIONS['DO_NOTHING']
         self._do_nothing_actions_counter = 0
+
+    def set_model(self, model):
+        self._model = model
 
     def get_last_action(self):
         return self._last_action
@@ -111,11 +118,23 @@ class DynamicEntity(Entity):
         return self._model.get_name()
 
     def act(self, field) -> tuple:
+        """
+        Calls the model's method to make a move
+
+        Args:
+            field (list): The matrix of Entity elements
+                represents current field state
+
+        Returns:
+            tuple: one of ACTIONS
+        """
         states_map = [
             [field[i][j].get_state() for j in range(9)]
             for i in range(9)
         ]
-        action = self._model.act(states_map, self._world_map_x, self._world_map_y)
+        action = self._model.act(
+            states_map, self._world_map_x, self._world_map_y
+        )
         self._last_action = action
 
         return action

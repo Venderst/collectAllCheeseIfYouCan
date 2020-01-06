@@ -1,4 +1,4 @@
-from random import randint, choice
+from random import choice
 from copy import copy
 
 from game_objects import ENTITIES_STATES, Entity, DynamicEntity
@@ -6,18 +6,38 @@ from game_objects import ENTITIES_STATES, Entity, DynamicEntity
 
 class WorldGenerator:
 
-    def generate_field(self, walls_count, cheese_count, mouse: DynamicEntity, cat: DynamicEntity):
+    def generate_field(self, walls_count, cheese_count, mouse=None, cat=None):
         field = [
             [Entity(j, i, ENTITIES_STATES['empty']) for j in range(9)]
             for i in range(9)
         ]
 
-        field[mouse.get_y()][mouse.get_x()] = copy(mouse)
-        field[cat.get_y()][cat.get_x()] = copy(cat)
+        self.add_characters(field, mouse, cat)
+
         self.generate_and_add_entities_on_field(field, walls_count, ENTITIES_STATES['wall'])
         self.generate_and_add_entities_on_field(field, cheese_count, ENTITIES_STATES['cheese'])
 
         return field
+
+    @staticmethod
+    def clear_dynamic_entities(field):
+        for i in range(9):
+            for j in range(9):
+                if field[i][j] is DynamicEntity:
+                    print(field[i][j])
+                field[i][j] = Entity(j, i, ENTITIES_STATES['empty'])\
+                    if field[i][j] is DynamicEntity else field[i][j]
+
+    @staticmethod
+    def add_characters(field, mouse=None, cat=None):
+        if not (mouse is None):
+            assert isinstance(mouse, DynamicEntity),\
+                'Mouse must be instance of DynamicEntity!'
+            field[mouse.get_y()][mouse.get_x()] = copy(mouse)
+        if not (cat is None):
+            assert isinstance(cat, DynamicEntity),\
+                'Cat must be instance of DynamicEntity!'
+            field[cat.get_y()][cat.get_x()] = copy(cat)
 
     @staticmethod
     def generate_and_add_entities_on_field(field, entities_count, entities_state):

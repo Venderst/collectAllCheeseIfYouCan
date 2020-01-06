@@ -38,13 +38,14 @@ def process_mouse_transition_in_hole(field, mouse, holes: list, mouse_next_x, mo
 
 
 def update_field(field, entity: DynamicEntity, action: tuple, world_generator, holes, amount_of_cheese_to_win=5,
-                 amount_of_do_nothing_actions_to_loose=3):
+                 amount_of_do_nothing_actions_to_loose=3) -> tuple:
     if action == ACTIONS['DO_NOTHING']:
         entity.increase_do_nothing_actions_counter()
         if entity.get_do_nothing_actions_counter() > amount_of_do_nothing_actions_to_loose:
-            print('counter')
-            return GAME_RESULTS['CAT_WON'] if entity.get_state() == ENTITIES_STATES['mouse'] \
-                else GAME_RESULTS['MOUSE_WON']
+            return \
+                GAME_RESULTS['CAT_WON'] if entity.get_state() == ENTITIES_STATES['mouse'] \
+                else GAME_RESULTS['MOUSE_WON'], \
+                'Max do nothing\nactions number achieved'
     else:
         entity.reset_do_nothing_actions_counter()
 
@@ -54,48 +55,42 @@ def update_field(field, entity: DynamicEntity, action: tuple, world_generator, h
     if 0 <= new_y < 9 and 0 <= new_x < 9:
         new_state = field[new_y][new_x].get_state()
         if new_state == ENTITIES_STATES['wall']:
-            print('wall')
             if entity.get_state() == ENTITIES_STATES['cat']:
-                return GAME_RESULTS['MOUSE_WON']
+                return GAME_RESULTS['MOUSE_WON'], 'Cat crashed into the wall'
             else:
-                return GAME_RESULTS['CAT_WON']
+                return GAME_RESULTS['CAT_WON'], 'Mouse crashed into the wall'
         else:
             if entity.get_state() == ENTITIES_STATES['mouse']:
                 if new_state == ENTITIES_STATES['cheese']:
                     entity.increase_score()
                     if entity.get_score() == amount_of_cheese_to_win:
-                        result = GAME_RESULTS['MOUSE_WON']
-                        print('all cheese ate')
+                        result = GAME_RESULTS['MOUSE_WON'], 'All the cheeses are collected'
                     else:
-                        result = GAME_RESULTS['NOTHING']
+                        result = GAME_RESULTS['NOTHING'], ''
                 elif new_state == ENTITIES_STATES['cat']:
-                    result = GAME_RESULTS['CAT_WON']
-                    print('mouse went to cat')
+                    result = GAME_RESULTS['CAT_WON'], 'Mouse caught by a cat'
                 elif new_state == ENTITIES_STATES['hole']:
                     process_mouse_transition_in_hole(field, entity, holes, new_x, new_y)
-                    return GAME_RESULTS['NOTHING']
+                    return GAME_RESULTS['NOTHING'], ''
                 else:
-                    result = GAME_RESULTS['NOTHING']
+                    result = GAME_RESULTS['NOTHING'], ''
             else:
                 if new_state == ENTITIES_STATES['mouse']:
-                    result = GAME_RESULTS['CAT_WON']
-                    print('cat went to mouse')
+                    result = GAME_RESULTS['CAT_WON'], 'The cat caught the mouse'
                 elif new_state == ENTITIES_STATES['cheese']:
                     world_generator.generate_and_add_entities_on_field(field, 1, ENTITIES_STATES['cheese'])
-                    result = GAME_RESULTS['NOTHING']
+                    result = GAME_RESULTS['NOTHING'], 'The cat ate the cheese'
                 elif new_state == ENTITIES_STATES['hole']:
-                    print('cat went to hole')
-                    return GAME_RESULTS['MOUSE_WON']
+                    return GAME_RESULTS['MOUSE_WON'], 'The cat was lost in the hole'
                 else:
-                    result = GAME_RESULTS['NOTHING']
+                    result = GAME_RESULTS['NOTHING'], ''
 
             field[entity.get_y()][entity.get_x()] = Entity(entity.get_x(), entity.get_y(), ENTITIES_STATES['empty'])
             field[new_y][new_x] = entity
 
             return result
     else:
-        print('out of territory')
         if entity.get_state() == ENTITIES_STATES['cat']:
-            return GAME_RESULTS['MOUSE_WON']
+            return GAME_RESULTS['MOUSE_WON'], 'The cat went out of bounds'
         else:
-            return GAME_RESULTS['CAT_WON']
+            return GAME_RESULTS['CAT_WON'], 'The mouse went out of bounds'
