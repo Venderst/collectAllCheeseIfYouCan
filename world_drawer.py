@@ -210,8 +210,8 @@ class Drawer:
             text_surface = pygame.transform.rotate(text_surface, 90)
             cat_text_surfaces.append(text_surface)
 
-        cell_width = (self.screen_width - max_mouse_text_surface_len) // (len(game_results))
-        cell_height = (self.screen_height - max_cat_text_surface_len) // (len(game_results[0]) + 1)
+        cell_width = (self.screen_width - max_mouse_text_surface_len) // (len(game_results[0]) + 1)
+        cell_height = (self.screen_height - max_cat_text_surface_len) // (len(game_results))
 
         offset_horizontal = int(cell_width * 0.5)
         offset_vertical = int(cell_height * 0.5)
@@ -268,8 +268,8 @@ class Drawer:
 
         sprite_size = min(cell_width, cell_height)
         sprite_size //= 2
-        if sprite_size > 128:
-            sprite_size = 128
+        if sprite_size > 96:
+            sprite_size = 96
         mouse_sprite = pygame.transform.scale(self.sprites[ENTITIES_STATES['mouse']], (sprite_size, sprite_size))
         cat_sprite = pygame.transform.scale(self.sprites[ENTITIES_STATES['cat']], (sprite_size, sprite_size))
 

@@ -1,6 +1,6 @@
 from time import time
 from copy import deepcopy
-import random
+
 import pygame
 
 from world_drawer import Drawer
@@ -9,18 +9,18 @@ from world_updater import update_field, update_entity, GAME_RESULTS
 from game_objects import DynamicEntity, ENTITIES_STATES
 from result_table_calculator import calculate_result_rating, sort_calculated_results_table
 
-from random_models import RandomCat, RandomMouse
-from simple_clever_models import SimpleCleverCat, SimpleCleverMouse
+from models.random_models import RandomCat, RandomMouse
+from models.simple_clever_models import SimpleCleverCat, SimpleCleverMouse
 
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
 ENTITY_SIZE = 112
 
-GAME_DELAY = 500 * 0
-GAME_STATE_COMMENT_PRINTED_DELAY = 500 * 0
-WINNER_PRINTED_DELAY = 4000 * 0
-NO_WINNER_PRINTED_DELAY = 2000 * 0
+GAME_DELAY = 500
+GAME_STATE_COMMENT_PRINTED_DELAY = 500
+WINNER_PRINTED_DELAY = 4000
+NO_WINNER_PRINTED_DELAY = 2000
 
 MAX_ACTIONS_NUMBER = 216
 
@@ -93,6 +93,7 @@ for mouse_model_index in range(len(mouse_models)):
         cat.set_model(cat_model)
 
         game_result = GAME_RESULTS['NOTHING']
+        game_state_description = ''
 
         actions_counter = 0
 
