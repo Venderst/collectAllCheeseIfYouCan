@@ -1,10 +1,10 @@
 # Collect all cheese if you can
 
 ##### Table of Contents  
-[Preparing the workspace](#preparing-the-workspace)
-[Running the programm](#running-the-programm)
-[Adding a model](#adding-a-model)
-[Models evaluation](#models-evaluation)
+* [Preparing the workspace](#preparing-the-workspace)
+* [Running the programm](#running-the-programm)
+* [Adding a model](#adding-a-model)
+* [Models evaluation](#models-evaluation)
 
 
 <a name="preparing-the-workspace"></a>
