@@ -129,8 +129,8 @@ class DynamicEntity(Entity):
             tuple: one of ACTIONS
         """
         states_map = [
-            [field[i][j].get_state() for j in range(9)]
-            for i in range(9)
+            [field[i][j].get_state() for j in range(len(field[i]))]
+            for i in range(len(field))
         ]
         action = self._model.act(
             states_map, self._world_map_x, self._world_map_y
