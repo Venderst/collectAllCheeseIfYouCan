@@ -5,6 +5,7 @@
 * [Running the programm](#running-the-programm)
 * [Adding a model](#adding-a-model)
 * [Models evaluation](#models-evaluation)
+* [License](#license)
 
 
 <a name="preparing-the-workspace"></a>
@@ -220,7 +221,8 @@ Cat:
 >	return result
 >```
 
-## License
+<a name="license"></a>
+### License
 
 * [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
 * Copyright 2019-2020 © [Venderst](https://github.com/Venderst).
