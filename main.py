@@ -64,184 +64,200 @@ drawer = Drawer(
 )
 world_generator = WorldGenerator()
 
-game_results = []
+all_replays_results = []
 
-generated_field = world_generator.generate_field(
-    walls_number=config['WALLS_NUMBER'], cheese_number=config['CHEESE_NUMBER'],
-    world_width=config['WORLD_WIDTH'], world_height=config['WORLD_HEIGHT']
-)
-generated_holes = world_generator.generate_and_add_holes_on_filed(
-    generated_field, config['HOLES_NUMBER']
-)
+for replay in range(config['REPLAYS_NUM']):
+    replay_results = []
 
-mouse = DynamicEntity(config['WORLD_WIDTH'] - 1, 0, ENTITIES_STATES['mouse'])
-cat = DynamicEntity(0, config['WORLD_HEIGHT'] - 1, ENTITIES_STATES['cat'])
+    generated_field = world_generator.generate_field(
+        walls_number=config['WALLS_NUMBER'], cheese_number=config['CHEESE_NUMBER'],
+        world_width=config['WORLD_WIDTH'], world_height=config['WORLD_HEIGHT']
+    )
+    generated_holes = world_generator.generate_and_add_holes_on_filed(
+        generated_field, config['HOLES_NUMBER']
+    )
 
-game_results.append([])
-game_results[0].append('')
+    mouse = DynamicEntity(config['WORLD_WIDTH'] - 1, 0, ENTITIES_STATES['mouse'])
+    cat = DynamicEntity(0, config['WORLD_HEIGHT'] - 1, ENTITIES_STATES['cat'])
 
-for cat_model in cat_models:
-    game_results[0].append(cat_model.get_name())
+    replay_results.append([])
+    replay_results[0].append('')
 
-for mouse_model_index in range(len(mouse_models)):
-    game_results.append(list([mouse_models[mouse_model_index].get_name()]))
-    for cat_model_index in range(len(cat_models)):
-        if mouse_model_index == cat_model_index:
-            game_results[mouse_model_index + 1].append(
-                [GAME_RESULTS['NOTHING'], '0', '0']
+    for cat_model in cat_models:
+        replay_results[0].append(cat_model.get_name())
+
+    for mouse_model_index in range(len(mouse_models)):
+        replay_results.append(list([mouse_models[mouse_model_index].get_name()]))
+        for cat_model_index in range(len(cat_models)):
+            if mouse_model_index == cat_model_index:
+                replay_results[mouse_model_index + 1].append(
+                    [GAME_RESULTS['NOTHING'], '0', '0']
+                )
+                continue
+            field = deepcopy(generated_field)
+            holes = deepcopy(generated_holes)
+
+            mouse.reset_do_nothing_actions_counter()
+            mouse.reset_score()
+
+            cat.reset_do_nothing_actions_counter()
+            cat.reset_score()
+
+            mouse.set_x(config['WORLD_WIDTH'] - 1)
+            mouse.set_y(0)
+
+            cat.set_x(0)
+            cat.set_y(config['WORLD_HEIGHT'] - 1)
+
+            # for honest game
+            if config['HONEST_MODE']:
+                random.seed(soil_rand)
+
+            mouse_model = mouse_models[mouse_model_index]
+            cat_model = cat_models[cat_model_index]
+
+            mouse.set_model(mouse_model)
+            cat.set_model(cat_model)
+
+            game_result = GAME_RESULTS['NOTHING']
+            game_state_description = ''
+
+            actions_counter = 0
+
+            world_generator.clear_dynamic_entities(field)
+            world_generator.add_characters(field, mouse=mouse, cat=cat)
+
+            drawer.draw_world(screen, cat, mouse, field, '', False, False)
+            pygame.time.delay(config['GAME_DELAY'])
+
+            while game_result == GAME_RESULTS['NOTHING'] and not is_game_over:
+                # checking if ESC key pressed and
+                # if true, then it is necessary to stop the game
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.display.quit()
+                            pygame.quit()
+                            exit()
+
+                mouse_action_begin_time = time()
+
+                mouse_action = mouse.act(field)
+                game_result, game_state_description = update_field(
+                    field, mouse, mouse_action, world_generator, holes,
+                    amount_of_cheese_to_win=config['CHEESE_NUMBER'],
+                    amount_of_do_nothing_actions_to_loose=config['MAX_DO_NOTHING_ACTIONS_NUMBER'],
+                    field_width=config['WORLD_WIDTH'],
+                    field_height=config['WORLD_HEIGHT']
+                )
+
+                update_entity(
+                    mouse, mouse_action,
+                    field_width=config['WORLD_WIDTH'],
+                    field_height=config['WORLD_HEIGHT']
+                )
+                actions_counter += 1
+                drawer.draw_world(
+                    screen, cat, mouse, field, actions_counter, True, False,
+                    game_state_description
+                )
+                if game_result != GAME_RESULTS['NOTHING']:
+                    break
+
+                mouse.set_game_result(game_result)
+
+                pygame.time.delay(
+                    config['GAME_DELAY'] -
+                    int((time() - mouse_action_begin_time) * 1000) +
+                    config['GAME_STATE_COMMENT_PRINTED_DELAY'] *
+                    int(len(game_state_description) > 0)
+                )
+
+                cat_action_begin_time = time()
+
+                cat_action = cat.act(field)
+                game_result, game_state_description = update_field(
+                    field, cat, cat_action, world_generator, holes,
+                    field_width=config['WORLD_WIDTH'],
+                    field_height=config['WORLD_HEIGHT']
+                )
+
+                update_entity(
+                    cat, cat_action,
+                    field_width=config['WORLD_WIDTH'],
+                    field_height=config['WORLD_HEIGHT']
+                )
+                actions_counter += 1
+                drawer.draw_world(
+                    screen, cat, mouse, field, actions_counter, False, True,
+                    game_state_description
+                )
+
+                if game_result == GAME_RESULTS['MOUSE_WON']:
+                    break
+                elif game_result == GAME_RESULTS['CAT_WON']:
+                    break
+                elif actions_counter == config['MAX_ACTIONS_NUMBER']:
+                    game_result = GAME_RESULTS[config['MAX_ACTIONS_NUMBER_ACHIEVED_GAME_RESULT']]
+                    game_state_description = 'Max actions\nnumber achieved'
+                    break
+
+                cat.set_game_result(game_result)
+
+                pygame.time.delay(
+                    config['GAME_DELAY'] -
+                    int((time() - cat_action_begin_time) * 1000) +
+                    config['GAME_STATE_COMMENT_PRINTED_DELAY'] *
+                    int(len(game_state_description) > 0)
+                )
+
+            replay_results[mouse_model_index + 1].append(
+                [game_result, actions_counter, mouse.get_score()]
             )
-            continue
-        field = deepcopy(generated_field)
-        holes = deepcopy(generated_holes)
 
-        mouse.reset_do_nothing_actions_counter()
-        mouse.reset_score()
-
-        cat.reset_do_nothing_actions_counter()
-        cat.reset_score()
-
-        mouse.set_x(config['WORLD_WIDTH'] - 1)
-        mouse.set_y(0)
-
-        cat.set_x(0)
-        cat.set_y(config['WORLD_HEIGHT'] - 1)
-
-        # for honest game
-        if config['HONEST_MODE']:
-            random.seed(soil_rand)
-
-        mouse_model = mouse_models[mouse_model_index]
-        cat_model = cat_models[cat_model_index]
-
-        mouse.set_model(mouse_model)
-        cat.set_model(cat_model)
-
-        game_result = GAME_RESULTS['NOTHING']
-        game_state_description = ''
-
-        actions_counter = 0
-
-        world_generator.clear_dynamic_entities(field)
-        world_generator.add_characters(field, mouse=mouse, cat=cat)
-
-        drawer.draw_world(screen, cat, mouse, field, '', False, False)
-        pygame.time.delay(config['GAME_DELAY'])
-
-        while game_result == GAME_RESULTS['NOTHING'] and not is_game_over:
-            # checking if ESC key pressed and
-            # if true, then it is necessary to stop the game
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        pygame.display.quit()
-                        pygame.quit()
-                        exit()
-
-            mouse_action_begin_time = time()
-
-            mouse_action = mouse.act(field)
-            game_result, game_state_description = update_field(
-                field, mouse, mouse_action, world_generator, holes,
-                amount_of_cheese_to_win=config['CHEESE_NUMBER'],
-                amount_of_do_nothing_actions_to_loose=config['MAX_DO_NOTHING_ACTIONS_NUMBER'],
-                field_width=config['WORLD_WIDTH'],
-                field_height=config['WORLD_HEIGHT']
-            )
-
-            mouse.set_game_result(game_result)
             cat.set_game_result(game_result)
+            mouse.set_game_result(game_result)
 
-            update_entity(
-                mouse, mouse_action,
-                field_width=config['WORLD_WIDTH'],
-                field_height=config['WORLD_HEIGHT']
-            )
-            actions_counter += 1
-            drawer.draw_world(
-                screen, cat, mouse, field, actions_counter, True, False,
-                game_state_description
-            )
             if game_result != GAME_RESULTS['NOTHING']:
-                break
+                won_entity = cat if game_result == GAME_RESULTS['CAT_WON'] else mouse
+                drawer.draw_world(
+                    screen, cat, mouse, field, actions_counter, True, True
+                )
+                drawer.draw_winner(screen, won_entity, game_state_description)
+                pygame.display.update()
+                pygame.time.delay(config['WINNER_PRINTED_DELAY'])
+            else:
+                drawer.draw_world(
+                    screen, cat, mouse, field, actions_counter, True, True
+                )
+                drawer.draw_no_winner(screen, game_state_description)
+                drawer.draw_no_winner(screen, game_state_description)
+                pygame.display.update()
+                pygame.time.delay(config['WINNER_PRINTED_DELAY'])
+            print('--------------------------')
 
-            pygame.time.delay(
-                config['GAME_DELAY'] -
-                int((time() - mouse_action_begin_time) * 1000) +
-                config['GAME_STATE_COMMENT_PRINTED_DELAY'] *
-                int(len(game_state_description) > 0)
-            )
+    # processing results
+    calculate_result_rating(replay_results, cat_models, mouse_models)
+    sort_calculated_results_table(replay_results)
 
-            cat_action_begin_time = time()
+    all_replays_results.append(replay_results)
 
-            cat_action = cat.act(field)
-            game_result, game_state_description = update_field(
-                field, cat, cat_action, world_generator, holes,
-                field_width=config['WORLD_WIDTH'],
-                field_height=config['WORLD_HEIGHT']
-            )
+    drawer.draw_result_table(screen, replay_results)
+    pygame.display.update()
 
-            mouse.set_game_result(game_result)
-            cat.set_game_result(game_result)
+    waiting_start_time = time()
+    remaining_waiting_time = config['RESULT_TABLE_WINDOW_DELAY']
+    is_exit_key_pressed = False
+    while remaining_waiting_time != 0 and not is_exit_key_pressed:
+        if remaining_waiting_time != -1:
+            remaining_waiting_time -= time() - waiting_start_time
+            remaining_waiting_time = max(remaining_waiting_time, 0)
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    is_exit_key_pressed = True
+                    break
 
-            update_entity(
-                cat, cat_action,
-                field_width=config['WORLD_WIDTH'],
-                field_height=config['WORLD_HEIGHT']
-            )
-            actions_counter += 1
-            drawer.draw_world(
-                screen, cat, mouse, field, actions_counter, False, True,
-                game_state_description
-            )
-
-            if game_result == GAME_RESULTS['MOUSE_WON']:
-                break
-            elif game_result == GAME_RESULTS['CAT_WON']:
-                break
-            elif actions_counter == config['MAX_ACTIONS_NUMBER']:
-                game_result = config['MAX_ACTIONS_NUMBER_ACHIEVED_GAME_RESULT']
-                game_state_description = 'Max actions\nnumber achieved'
-                break
-
-            pygame.time.delay(
-                config['GAME_DELAY'] -
-                int((time() - cat_action_begin_time) * 1000) +
-                config['GAME_STATE_COMMENT_PRINTED_DELAY'] *
-                int(len(game_state_description) > 0)
-            )
-
-        game_results[mouse_model_index + 1].append(
-            [game_result, actions_counter, mouse.get_score()]
-        )
-
-        if game_result != GAME_RESULTS['NOTHING']:
-            won_entity = cat if game_result == GAME_RESULTS['CAT_WON'] else mouse
-            drawer.draw_world(
-                screen, cat, mouse, field, actions_counter, True, True
-            )
-            drawer.draw_winner(screen, won_entity, game_state_description)
-            pygame.display.update()
-            pygame.time.delay(config['WINNER_PRINTED_DELAY'])
-        else:
-            drawer.draw_world(
-                screen, cat, mouse, field, actions_counter, True, True
-            )
-            drawer.draw_no_winner(screen, game_state_description)
-            drawer.draw_no_winner(screen, game_state_description)
-            pygame.display.update()
-            pygame.time.delay(config['WINNER_PRINTED_DELAY'])
-        print('--------------------------')
-
-# processing results
-calculate_result_rating(game_results, cat_models, mouse_models)
-sort_calculated_results_table(game_results)
-
-drawer.draw_result_table(screen, game_results)
-pygame.display.update()
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pygame.display.quit()
-                pygame.quit()
-                exit()
+pygame.display.quit()
+pygame.quit()
+exit()
