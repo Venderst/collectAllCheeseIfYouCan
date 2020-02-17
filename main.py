@@ -20,13 +20,15 @@ with open('models.yaml') as models_file:
 for file_name, [cat_class_name, mouse_class_name] in models.items():
     file_name = file_name.replace('/', '.').replace('\\', '.')
     file_name = file_name.replace('.py', '')
-    file_name = file_name.split('.')[-1]
+
+    if not file_name.startswith('models'):
+        file_name = 'models.' + file_name
 
     catClass = getattr(
-        importlib.import_module(f'models.{file_name}'), cat_class_name
+        importlib.import_module(file_name), cat_class_name
     )
     mouseClass = getattr(
-        importlib.import_module(f'models.{file_name}'), mouse_class_name
+        importlib.import_module(file_name), mouse_class_name
     )
     cat_models.append(catClass())
     mouse_models.append(mouseClass())

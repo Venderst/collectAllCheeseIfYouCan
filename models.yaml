@@ -1,2 +1,2 @@
-models/random_models.py: [RandomCat, RandomMouse]
+random_models.py: [RandomCat, RandomMouse]
 simple_clever_models: [SimpleCleverCat, SimpleCleverMouse]
