@@ -1,5 +1,3 @@
-import traceback
-
 ENTITIES_STATES = {
     'empty': -1,
     'wall': 0,
