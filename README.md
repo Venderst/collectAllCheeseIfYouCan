@@ -162,19 +162,21 @@ For convenience, the sections where you need to make changes are marked
 Mouse:
 
 >Score function for one game:
-><img src="https://render.githubusercontent.com/render/math?math=game\: score\: for\: mouse = \begin{cases}C / (N %2B 1),\: mouse\: won\\-1 * (T - C %2B N / (C %2B 1)),\: cat\: won\\-N / (C %2B 1),\: draw\end{cases},">
+>
+><img src="https://render.githubusercontent.com/render/math?math=game\: score\: for\: mouse = \begin{cases}1 %2B C / N,\: mouse\: won\\-1 %2B C / T,\: cat\: won\\C / T,\: draw\end{cases}">
 >
 ><img src="https://render.githubusercontent.com/render/math?math=N-actions\: number, C - the\: amount\: of\: cheese\: eaten\: by\: the\: mouse, T - total\: cheese">
+>
 >Code:
 >
 >```python
 >def calc_game_score_for_mouse(game_result, actions_number, mouse_cheese_score, total_cheese_amount):
->	if game_result == 'mouse_won':
->		return mouse_cheese_score / (actions_number + 1)
->	if game_result == 'cat_won':
->		return -1 * (total_cheese_amount - mouse_cheese_score + actions_number / (mouse_cheese_score + 1))
->	if game_result == 'draw':
->		return -1 * actions_number / (mouse_cheese_score + 1)
+>   if game_result == GAME_RESULTS['MOUSE_WON']:
+>       return 1 + mouse_cheese_score / actions_number
+>   elif game_result == GAME_RESULTS['CAT_WON']:
+>       return -1 + mouse_cheese_score / total_cheese_amount
+>   else:
+>       return mouse_cheese_score / total_cheese_amount
 >```
 
 >The final score is calculated as the sum of points for each game
@@ -194,16 +196,19 @@ Mouse:
 
 Cat:
 >Score function for one game:
-><img src="https://render.githubusercontent.com/render/math?math=game\: score\: for\: cat = \begin{cases}(M - N) / C ^ 2,\: cat\: won\\-1 * (C %2B 1) ^ 2 %2B C * N / M,\: mouse\: won\\-1 * C ^ 2 * N / M,\: draw\end{cases},">
-><img src="https://render.githubusercontent.com/render/math?math=N-actions\: number, C - the\: amount\: of\: cheese\: eaten\: by\: the\: mouse, M - max\: actions\: number">
+>
+><img src="https://render.githubusercontent.com/render/math?math=game\: score\: for\: cat = \begin{cases}1 - N / M,\: cat\: won\\-1,\: mouse\: won\\-1 * C / T,\: draw\end{cases}">
+>
+><img src="https://render.githubusercontent.com/render/math?math=N-actions\: number, C - the\: amount\: of\: cheese\: eaten\: by\: the\: mouse, M - max\: actions\: number, T - total\: cheese">
+>
 >```python
->def calc_game_score_for_cat(game_result, actions_number, mouse_cheese_score, max_actions_number):
->	if game_result == 'cat_won':
->		return (max_actions_number - actions_number) / ((mouse_cheese_score + 1) ** 2)
->	if game_result == 'mouse_won':
->		return -1 * (mouse_cheese_score ** 2) + mouse_cheese_score * actions_number / max_actions_number
->	if game_result == 'draw':
->		return -1 * (mouse_cheese_score ** 2) * actions_number / max_actions_number
+>def calc_game_score_for_cat(game_result, actions_number, mouse_cheese_score, max_actions_number, total_cheese_amount):
+>    if game_result == GAME_RESULTS['CAT_WON']:
+>        return 1 - actions_number / max_actions_number
+>    elif game_result == GAME_RESULTS['MOUSE_WON']:
+>        return -1
+>    else:
+>        return -1 * mouse_cheese_score / total_cheese_amount
 >```
 
 >The final score is calculated as the sum of points for each game
@@ -216,8 +221,10 @@ Cat:
 >def calc_final_cat_score(games_results):
 >	result = 0
 >	for i in range(len(game_results)):
->		game_result, actions_number, mouse_cheese_score, max_actions_number = game_results[i]
->		result += calc_game_score_for_cat(game_result, actions_number, mouse_cheese_score, max_actions_number)
+>		game_result, actions_number, mouse_cheese_score, max_actions_number, total_cheese_amount = game_results[i]
+>		result += calc_game_score_for_cat(
+>           game_result, actions_number, mouse_cheese_score, max_actions_number, total_cheese_amount
+>       )
 >	return result
 >```
 
