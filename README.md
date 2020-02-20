@@ -2,7 +2,7 @@
 
 ##### Table of Contents  
 * [Preparing the workspace](#preparing-the-workspace)
-* [Running the programm](#running-the-programm)
+* [Running the program](#running-the-program)
 * [Adding a model](#adding-a-model)
 * [Models evaluation](#models-evaluation)
 * [License](#license)
@@ -33,7 +33,7 @@ Install the required libraries
 > $ sudo pip install -r requirements.txt
 >```
 
-<a name="running-the-programm"></a>
+<a name="running-the-program"></a>
 ### Running the program
 
 >Windows:
@@ -67,11 +67,11 @@ from game_objects import Model, ACTIONS, ENTITIES_STATES
 from utils.world_updater import GAME_RESULTS
 
 
-class <YourCatModelName>(Model):
+class YourCatModelName(Model):
 
     def __init__(self):
         super().__init__()
-		# TODO change
+        # TODO change
         self._name = '<Your cat model displayed name>'
 
     def act(self, states_map, player_x, player_y):
@@ -93,7 +93,7 @@ class <YourCatModelName>(Model):
             The direction of the player's movement, one of the ACTIONS values
 
         """
-		# TODO implement
+        # TODO implement
         return ACTIONS['DO_NOTHING']
 
     def set_game_result(self, game_result):
@@ -108,11 +108,11 @@ class <YourCatModelName>(Model):
         pass
 
 
-class <YourMouseModelName>(Model):
+class YourMouseModelName(Model):
 
     def __init__(self):
         super().__init__()
-		# TODO change
+        # TODO change
         self._name = '<Your mouse model displayed name>'
 
     def act(self, states_map, player_x, player_y):
@@ -134,7 +134,7 @@ class <YourMouseModelName>(Model):
             The direction of the player's movement, one of the ACTIONS values
 
         """
-		# TODO implement
+        # TODO implement
         return ACTIONS['DO_NOTHING']
 
     def set_game_result(self, game_result):

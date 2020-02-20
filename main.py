@@ -1,3 +1,4 @@
+import random
 from time import time
 from copy import deepcopy
 import yaml
@@ -8,7 +9,7 @@ import pygame
 from utils.world_drawer import Drawer
 from utils.world_generator import WorldGenerator
 from utils.world_updater import update_field, update_entity, GAME_RESULTS
-from game_objects import DynamicEntity, ENTITIES_STATES
+from game_objects import DynamicEntity, ENTITIES_STATES, ACTIONS
 from utils.result_table_calculator import calculate_result_rating, sort_calculated_results_table
 
 cat_models = []
@@ -144,7 +145,10 @@ for replay in range(config['REPLAYS_NUM']):
 
                 mouse_action_begin_time = time()
 
-                mouse_action = mouse.act(field)
+                mouse_action = mouse.act(deepcopy(field))
+                if mouse_action not in ACTIONS.values():
+                    game_result, game_state_description = GAME_RESULTS['CAT_WON'], 'Mouse action is incorrect'
+                    break
                 game_result, game_state_description = update_field(
                     field, mouse, mouse_action, world_generator, holes,
                     amount_of_cheese_to_win=config['CHEESE_NUMBER'],
@@ -177,7 +181,10 @@ for replay in range(config['REPLAYS_NUM']):
 
                 cat_action_begin_time = time()
 
-                cat_action = cat.act(field)
+                cat_action = cat.act(deepcopy(field))
+                if cat_action not in ACTIONS.values():
+                    game_result, game_state_description = GAME_RESULTS['MOUSE_WON'], 'Cat action is incorrect'
+                    break
                 game_result, game_state_description = update_field(
                     field, cat, cat_action, world_generator, holes,
                     field_width=config['WORLD_WIDTH'],
