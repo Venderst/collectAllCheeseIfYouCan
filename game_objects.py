@@ -87,6 +87,7 @@ class DynamicEntity(Entity):
         super().__init__(world_map_x, world_map_y, state)
         self._model = model
 
+        self._state = state
         self._last_action = ACTIONS['DO_NOTHING']
         self._do_nothing_actions_counter = 0
 
@@ -132,12 +133,21 @@ class DynamicEntity(Entity):
             [field[i][j].get_state() for j in range(len(field[i]))]
             for i in range(len(field))
         ]
+        self._update_position(states_map)
         action = self._model.act(
             states_map, self._world_map_x, self._world_map_y
         )
         self._last_action = action
 
         return action
+
+    def _update_position(self, field):
+        for y in range(len(field)):
+            for x in range(len(field[y])):
+                if field[y][x] == self._state:
+                    self._world_map_x = x
+                    self._world_map_y = y
+                    return
 
     def set_game_result(self, game_result):
         self._model.set_game_result(game_result)
